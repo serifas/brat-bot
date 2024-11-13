@@ -78,13 +78,14 @@ async def on_ready():
 
 @bot.tree.command(name="send_verification", description="Send a verification message with a button")
 async def send_verification(interaction: discord.Interaction):
-    embed = discord.Embed(
-        title="Verification Required",
-        description="Select the button below to verify",
-        color=discord.Color.blue()
-    )
-    # Send the message with the VerificationView
-    await interaction.response.send_message(embed=embed, view=VerificationView())
+    if(interaction.user.guild_permissions.administrator):
+        embed = discord.Embed(
+            title="Verification Required",
+            description="Select the button below to verify",
+            color=discord.Color.blue()
+        )
+        # Send the message with the VerificationView
+        await interaction.response.send_message(embed=embed, view=VerificationView())
 
 def XIVAuthed(name, world, key):
     search_url = f"https://na.finalfantasyxiv.com/lodestone/character/?q={name}&worldname={world}"
