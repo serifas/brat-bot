@@ -15,6 +15,7 @@ contact_admin = 0
 valid_key = 1
 PatronRole = 1228050191018492015
 ServerID = 1227951289325981696
+RoleChannelID = 1228075680890228877
 # Generate a random key
 def generate_random_key(length=10):
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
@@ -57,13 +58,14 @@ class ConfirmButtonView(discord.ui.View):
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.success, custom_id="confirm_button")
     async def confirm_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         patron_role = interaction.guild.get_role(PatronRole)
+        channel = bot.get_channel(RoleChannelID)
         # Use self.name, self.world, and self.key to access instance variables
         if XIVAuthed(self.name, self.world, self.key) == valid_key:
             await interaction.user.add_roles(patron_role)
             await interaction.user.edit(nick=self.name)
             await interaction.response.send_message(
             
-                content=f"Confirmation for {self.name}@{self.world} successful! \nYou have been assigned the Patron role and your name has been set to your lodestone character name.\nYou may now access the rest of the server as you wish.",
+                content=f"Confirmation for {self.name}@{self.world} successful! \nYou have been assigned the Patron role and your name has been set to your lodestone character name.\nYou may now access the rest of the server as you wish. \n Please select your roles in {channel.mention}",
                 ephemeral=True
             )
         else:
@@ -140,7 +142,7 @@ def is_valid_world(world_name):
     # Check if the provided world_name is in the list of FFXIV worlds
     return world_name in ffxiv_worlds
 
-bot.run('TOKEN')
+bot.run('BOT_TOKEN')
 
 
 
