@@ -14,6 +14,7 @@ invalid_key = -1
 contact_admin = 0
 valid_key = 1
 PatronRole = 1228050191018492015
+ServerID = 1227951289325981696
 # Generate a random key
 def generate_random_key(length=10):
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
@@ -39,7 +40,7 @@ class VerificationModal(discord.ui.Modal, title="Verification Form"):
 
         # Send an ephemeral message with the generated key and a "Confirm" button
             await interaction.response.send_message(
-                content=f"Thank you, {self.name.value} from {self.world.value}!\n please add the following key to your lodestone character profile: `{random_key}`. \n(Make sure to hit submit twice) \nOnce completed hit confirm below.",
+                content=f"Thank you, {self.name.value} from {self.world.value}!\nPlease add the following key to your lodestone character profile: `{random_key}`. \n(Make sure to hit submit twice) \nOnce completed hit confirm below.",
                 ephemeral=True,
                 view=ConfirmButtonView(self.name.value, self.world.value, random_key)
             )
@@ -55,12 +56,14 @@ class ConfirmButtonView(discord.ui.View):
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.success, custom_id="confirm_button")
     async def confirm_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        patron_role = interaction.guild.get_role(PatronRole)
         # Use self.name, self.world, and self.key to access instance variables
         if XIVAuthed(self.name, self.world, self.key) == valid_key:
-            await interaction.user.add_roles(PatronRole)
+            await interaction.user.add_roles(patron_role)
+            await interaction.user.edit(nick=self.name)
             await interaction.response.send_message(
             
-                content=f"Confirmation for {self.name}@{self.world} successful! \nYou have been assigned the Patron role and may now access the rest of the server as you wish.",
+                content=f"Confirmation for {self.name}@{self.world} successful! \nYou have been assigned the Patron role and your name has been set to your lodestone character name.\nYou may now access the rest of the server as you wish.",
                 ephemeral=True
             )
         else:
@@ -126,7 +129,7 @@ def is_valid_world(world_name):
         "Aegis", "Adamantoise", "Alexander", "Anima", "Asura", "Atomos", "Bahamut", "Balmung", 
         "Behemoth", "Belias", "Brynhildr", "Cactuar", "Carbuncle", "Cerberus", "Chocobo", "Coeurl",
         "Diabolos", "Durandal", "Excalibur", "Exodus", "Faerie", "Famfrit", "Fenrir", "Garuda",
-        "Gilgamesh", "Goblin", "Gungnir", "Hades", "Hyperion", "Ifrit", "Ixion", "Jenova",
+        "Gilgamesh", "Goblin", "Golem", "Cuculainn", "Halicarnassus", "Kraken", "Maduin", "Marilith", "Rafflesia", "Seraph", "Gungnir", "Hades", "Hyperion", "Ifrit", "Ixion", "Jenova",
         "Kujata", "Lamia", "Leviathan", "Lich", "Louisoix", "Malboro", "Mandragora", "Masamune",
         "Mateus", "Midgardsormr", "Moogle", "Odin", "Omega", "Pandaemonium", "Phoenix", "Ragnarok",
         "Ramuh", "Ridill", "Sargatanas", "Shinryu", "Shiva", "Siren", "Tiamat", "Titan",
@@ -138,6 +141,8 @@ def is_valid_world(world_name):
     return world_name in ffxiv_worlds
 
 bot.run('TOKEN')
+
+
 
 
 
