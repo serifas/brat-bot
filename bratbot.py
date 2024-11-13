@@ -136,7 +136,7 @@ def is_valid_world(world_name):
     # Check if the provided world_name is in the list of FFXIV worlds
     return world_name in ffxiv_worlds
 
-bot.run('MTMwNTc0Nzk3MzU2ODk4NzE0Nw.GWz64U.ayTruRbMiDn-BoIVsqPrm54ymFZFtGAAAXc85g')
+bot.run('TOKEN')
 
 
 
