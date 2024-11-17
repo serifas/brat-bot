@@ -37,35 +37,44 @@ class VerificationModal(discord.ui.Modal, title="Verification Form"):
     async def on_submit(self, interaction: discord.Interaction):
         # Generate a random key after verification is submitted
         random_key = generate_random_key()
-        if(is_valid_world(self.world.value)):
-
-        # Send an ephemeral message with the generated key and a "Confirm" button
+        if is_valid_world(self.world.value):
+            # Send an ephemeral message with the generated key and a "Confirm" button
             await interaction.response.send_message(
                 content=f"Thank you, {self.name.value} from {self.world.value}!\nPlease add the following key to your lodestone character profile: `{random_key}`. \n(Make sure to hit submit twice) \nOnce completed hit confirm below.",
                 ephemeral=True,
-                view=ConfirmButtonView(self.name.value, self.world.value, random_key)
+                view=ConfirmButtonView(interaction.user, self.name.value, self.world.value, random_key)
             )
         else:
             await interaction.response.send_message("Invalid World Name Provided", ephemeral=True)
 
+
 class ConfirmButtonView(discord.ui.View):
-    def __init__(self, name, world, key):
+    def __init__(self, interaction_user, name, world, key):
         super().__init__(timeout=None)  # Persistent view with no timeout
+        self.interaction_user = interaction_user
         self.name = name
         self.world = world
         self.key = key
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.success, custom_id="confirm_button")
     async def confirm_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Check if the button is clicked by the same user who initiated the verification
+        if interaction.user != self.interaction_user:
+            await interaction.response.send_message(
+                content="You are not authorized to confirm this verification.",
+                ephemeral=True
+            )
+            return
+
         patron_role = interaction.guild.get_role(PatronRole)
         channel = bot.get_channel(RoleChannelID)
+
         # Use self.name, self.world, and self.key to access instance variables
         if XIVAuthed(self.name, self.world, self.key) == valid_key:
             await interaction.user.add_roles(patron_role)
             await interaction.user.edit(nick=self.name)
             await interaction.response.send_message(
-            
-                content=f"Confirmation for {self.name}@{self.world} successful! \nYou have been assigned the Patron role and your name has been set to your lodestone character name.\nYou may now access the rest of the server as you wish. \n Please select your roles in {channel.mention}",
+                content=f"Confirmation for {self.name}@{self.world} successful! \nYou have been assigned the Patron role and your name has been set to your Lodestone character name.\nYou may now access the rest of the server as you wish. \nPlease select your roles in {channel.mention}.",
                 ephemeral=True
             )
         else:
@@ -73,6 +82,7 @@ class ConfirmButtonView(discord.ui.View):
                 content=f"Confirmation failed! Please make sure you have the correct key in the Lodestone profile for {self.name}@{self.world}.",
                 ephemeral=True
             )
+
 
 @bot.event
 async def on_ready():
@@ -143,8 +153,6 @@ def is_valid_world(world_name):
     return world_name in ffxiv_worlds
 
 bot.run('BOT_TOKEN')
-
-
 
 
 
